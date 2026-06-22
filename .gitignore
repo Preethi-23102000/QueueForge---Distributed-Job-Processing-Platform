@@ -1,0 +1,30 @@
+# Maven build output
+target/
+**/target/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Eclipse / VS Code
+.classpath
+.project
+.settings/
+.vscode/
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files (never commit secrets)
+.env
+
+# Java
+*.class
+hs_err_pid*
