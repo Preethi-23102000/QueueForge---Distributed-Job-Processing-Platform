@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: queueforge-worker
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/queueforge}
+    username: ${SPRING_DATASOURCE_USERNAME:queueforge}
+    password: ${SPRING_DATASOURCE_PASSWORD:queueforge}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
+    listener:
+      simple:
+        default-requeue-rejected: false
+        concurrency: 1
+        max-concurrency: 5
