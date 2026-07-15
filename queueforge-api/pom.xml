@@ -50,6 +50,11 @@
         </dependency>
 
         <!-- Flyway database migrations (API owns the schema) -->
+        <!-- spring-boot-flyway provides the Boot 4 autoconfiguration that runs migrations on startup -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-flyway</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
