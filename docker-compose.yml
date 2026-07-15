@@ -1,0 +1,73 @@
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: queueforge
+      POSTGRES_USER: queueforge
+      POSTGRES_PASSWORD: queueforge
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U queueforge -d queueforge"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:4.3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: queueforge
+      RABBITMQ_DEFAULT_PASS: queueforge
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: queueforge-api/Dockerfile
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/queueforge
+      SPRING_DATASOURCE_USERNAME: queueforge
+      SPRING_DATASOURCE_PASSWORD: queueforge
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: "5672"
+      SPRING_RABBITMQ_USERNAME: queueforge
+      SPRING_RABBITMQ_PASSWORD: queueforge
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: queueforge-worker/Dockerfile
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/queueforge
+      SPRING_DATASOURCE_USERNAME: queueforge
+      SPRING_DATASOURCE_PASSWORD: queueforge
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: "5672"
+      SPRING_RABBITMQ_USERNAME: queueforge
+      SPRING_RABBITMQ_PASSWORD: queueforge
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      api:
+        condition: service_started
+
+volumes:
+  pgdata:
