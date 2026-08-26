@@ -2,6 +2,7 @@ package com.queueforge.api.web;
 
 import com.queueforge.api.exception.InvalidJobStateException;
 import com.queueforge.api.exception.JobNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -24,6 +25,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidJobStateException.class)
     public ResponseEntity<ErrorResponse> handleInvalidState(InvalidJobStateException ex) {
         return build(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex) {
+        return build(HttpStatus.CONFLICT,
+                "Conflicting request (a job with this idempotency key already exists)");
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

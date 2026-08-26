@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -38,8 +39,10 @@ public class JobController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public JobResponse submit(@Valid @RequestBody JobRequest request) {
-        return jobService.submit(request);
+    public JobResponse submit(
+            @Valid @RequestBody JobRequest request,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
+        return jobService.submit(request, idempotencyKey);
     }
 
     @GetMapping("/{jobId}")

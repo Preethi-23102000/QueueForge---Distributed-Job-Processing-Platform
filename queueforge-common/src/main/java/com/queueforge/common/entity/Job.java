@@ -61,6 +61,9 @@ public class Job {
   @Column(name = "requested_by")
   private String requestedBy;
 
+  @Column(name = "idempotency_key", updatable = false)
+  private String idempotencyKey;
+
   @CreationTimestamp
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
@@ -149,6 +152,14 @@ public class Job {
 
   public void setRequestedBy(String requestedBy) {
     this.requestedBy = requestedBy;
+  }
+
+  public String getIdempotencyKey() {
+    return idempotencyKey;
+  }
+
+  public void setIdempotencyKey(String idempotencyKey) {
+    this.idempotencyKey = idempotencyKey;
   }
 
   public Instant getCreatedAt() {

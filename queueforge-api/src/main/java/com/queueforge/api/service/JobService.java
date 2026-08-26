@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -44,15 +45,27 @@ public class JobService {
 
     /**
      * Persists a new job in QUEUED state and publishes it for processing.
+     *
+     * <p>If an idempotency key is supplied and a job already exists for it, the
+     * existing job is returned unchanged instead of creating a duplicate.
      */
     @Transactional
-    public JobResponse submit(JobRequest request) {
+    public JobResponse submit(JobRequest request, String idempotencyKey) {
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            Optional<Job> existing = jobRepository.findByIdempotencyKey(idempotencyKey);
+            if (existing.isPresent()) {
+                return JobMapper.toResponse(existing.get());
+            }
+        }
+
         Job job = new Job();
         job.setJobType(request.jobType());
         job.setStatus(JobStatus.QUEUED);
         job.setPayload(request.payload());
         job.setMaxRetries(request.maxRetries() != null ? request.maxRetries() : DEFAULT_MAX_RETRIES);
         job.setRetryCount(0);
+        job.setIdempotencyKey(
+                (idempotencyKey != null && !idempotencyKey.isBlank()) ? idempotencyKey : null);
 
         Job saved = jobRepository.save(job);
 
