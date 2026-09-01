@@ -1,17 +1,27 @@
 # QueueForge — Distributed Job Processing Platform
 
+[![CI](https://github.com/Preethi-23102000/QueueForge---Distributed-Job-Processing-Platform/actions/workflows/ci.yml/badge.svg)](https://github.com/Preethi-23102000/QueueForge---Distributed-Job-Processing-Platform/actions/workflows/ci.yml)
+
 A distributed background-job processing platform. Clients submit long-running jobs through a REST API; jobs are queued in RabbitMQ; separate worker services process them asynchronously; and job state, retries, and execution history are persisted in PostgreSQL.
 
-> 🚧 **Built in public, stage by stage.** See **Project Status** below for what currently works.
+> **Built in public, stage by stage.** See **Project Status** below for what currently works.
 
 ## Project Status
 
 | Stage | Scope | Status |
 |-------|-------|--------|
-| **1 — Core Platform** | API + RabbitMQ + PostgreSQL + Worker, job states, execution history, Docker Compose | 🟡 In progress |
-| 2 — Reliability & Testing | Retries, dead-letter queue, idempotency, concurrency safety, Testcontainers, CI | ⬜ Not started |
+| **1 — Core Platform** | API + RabbitMQ + PostgreSQL + Worker, job states, execution history, Docker Compose | ✅ Complete |
+| **2 — Reliability & Testing** | Automatic retry with backoff, dead-letter queue, idempotent submission, concurrency safety, Testcontainers, GitHub Actions CI | ✅ Complete |
 | 3 — Observability & Operations | Prometheus, Grafana, structured logs, health checks, metrics | ⬜ Not started |
 | 4 — Deployment & Scale | Kubernetes, multiple worker replicas, load testing, benchmarks | ⬜ Not started |
+
+## Reliability (Stage 2)
+
+- **Automatic retries with exponential backoff** — a failed job is re-queued via a retry queue with a growing delay (`base × 2^attempt`), moving through a `RETRYING` state.
+- **Dead-letter queue** — jobs that exhaust their retries are marked `DEAD_LETTERED` and routed to a DLQ for inspection.
+- **Idempotent submission** — an optional `Idempotency-Key` header de-duplicates jobs so a retried request never creates a duplicate.
+- **Concurrency safety** — optimistic locking (a `@Version` column) prevents two workers from corrupting the same job.
+- **Tested** — JUnit unit tests plus Testcontainers integration tests (real Postgres + RabbitMQ) run in CI on every push and pull request.
 
 ## Architecture
 
